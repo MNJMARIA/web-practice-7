@@ -212,32 +212,6 @@ figcaption {
 
 
 
-
-
-/* Адаптація під вузький екран  */
-/*@media (max-width: 700px) {
-  .block1 {
-    flex-direction: column;
-    align-items: center;
-    justify-content: center;
-  }
-
-  .header-menu ul {
-    flex-direction: column;
-    align-items: center;
-  }
-
-  .block6 {
-    flex-direction: column;
-    align-items: flex-start;
-  }
-
-  .footer-info ul {
-    text-align: left;
-  }
-}*/
-
-
 /* Для мобільних пристроїв */
 @media (max-width: 768px) {
   .container {
@@ -249,13 +223,14 @@ figcaption {
       "block4"
       "block5"
       "footer";
+    gap: 15px;
   }
   
   .block1 {
     flex-direction: column;
     gap: 15px;
     text-align: center;
-    padding: 15px;
+    align-items: center;
   }
   
   .header-inner {
