@@ -1,0 +1,291 @@
+let eventId = 0;
+let eventsBatch = [];
+let animationId;
+let running = false;
+
+const originalContent = document.querySelector('#main-content').innerHTML;
+
+document.getElementById('play-btn').addEventListener('click', startAnimation);
+
+function startAnimation() {
+    const block3 = document.querySelector('.block3');
+    block3.innerHTML = `
+    <div id="work">
+        <div id="controls">
+            <div id="controls-panel">
+                <button id="start-btn" class="controls-btn">Start</button>
+                <button id="close-btn" class="controls-btn">Close</button>
+            </div>
+            <div id="messages"></div>
+        </div>
+        <div id="anim">
+            <div id="red-square" class="square" style="width:20px;height:20px;background:red;"></div>
+            <div id="green-square" class="square" style="width:10px;height:10px;background:green;"></div>
+        </div>
+    </div>`;
+    
+    setupAnimation();
+}
+
+function setupAnimation() {
+    const anim = document.getElementById('anim');
+    const animRect = anim.getBoundingClientRect(); // розміри anim не змінюються під час анімації
+    
+    let red = {
+        el: document.getElementById('red-square'),
+        x: 0,
+        y: animRect.height / 2 - 10,
+        dx: 2,
+        dy: 2
+    };
+    
+    let green = {
+        el: document.getElementById('green-square'),
+        x: animRect.width / 2 - 5,
+        y: 0,
+        dx: 3,
+        dy: -3
+    };
+    
+    // Початкові позиції
+    red.el.style.left = red.x + 'px';
+    red.el.style.top = red.y + 'px';
+    green.el.style.left = green.x + 'px';
+    green.el.style.top = green.y + 'px';
+    
+    // Кнопка Start
+    document.getElementById('start-btn').addEventListener('click', () => {
+        logEvent('Натискання Start');
+        startMovement();
+    });
+    
+    // Кнопка Close
+    document.getElementById('close-btn').addEventListener('click', closeAnimation);
+    
+    function startMovement() {
+        if (running) return;
+        running = true;
+        
+        // Ховаємо Start
+        const startBtn = document.getElementById('start-btn');
+        startBtn.remove();
+        
+        // Створюємо і вставляємо Stop перед Close
+        const stopBtn = document.createElement('button');
+        stopBtn.textContent = 'Stop';
+        stopBtn.className = 'controls-btn';
+        stopBtn.id = 'stop-btn'; // для зручності
+        
+        stopBtn.addEventListener('click', () => {
+            logEvent('Натискання Stop');
+            cancelAnimationFrame(animationId);
+            running = false;
+            
+            // Ховаємо Stop
+            stopBtn.remove();
+            
+            // Створюємо Reload
+            const reloadBtn = document.createElement('button');
+            reloadBtn.textContent = 'Reload';
+            reloadBtn.className = 'controls-btn';
+            reloadBtn.id = 'reload-btn';
+            
+            reloadBtn.addEventListener('click', () => {
+                logEvent('Натискання Reload');
+                resetPositions();
+                
+                // Видаляємо Reload і повертаємо Start
+                reloadBtn.remove();
+                const panel = document.getElementById('controls-panel');
+                panel.insertBefore(startBtn, document.getElementById('close-btn'));
+                startBtn.style.display = 'inline';
+            });
+            
+            // Вставляємо Reload перед Close
+            const panel = document.getElementById('controls-panel');
+            panel.insertBefore(reloadBtn, document.getElementById('close-btn'));
+        });
+        
+        // Вставляємо Stop перед Close
+        const panel = document.getElementById('controls-panel');
+        panel.insertBefore(stopBtn, document.getElementById('close-btn'));
+        
+        // Запускаємо анімацію
+        animate();
+    }
+    
+    function animate() {
+        moveSquare(red);
+        moveSquare(green);
+        logEvent('Крок анімації');
+        
+        if (checkCollision(red, green)) {
+            logEvent('Повне накладання квадратів - стоп');
+            cancelAnimationFrame(animationId);
+            running = false;
+
+            // Автоматична зупинка — міняємо Stop на Reload
+            const stopBtn = document.getElementById('stop-btn');
+            if (stopBtn) {
+                stopBtn.remove();
+
+                const reloadBtn = document.createElement('button');
+                reloadBtn.textContent = 'Reload';
+                reloadBtn.className = 'controls-btn';
+                reloadBtn.id = 'reload-btn';
+
+                reloadBtn.addEventListener('click', () => {
+                    logEvent('Натискання Reload');
+                    resetPositions();
+
+                    reloadBtn.remove();
+                    const panel = document.getElementById('controls-panel');
+                    const startBtn = document.getElementById('start-btn');
+                    panel.insertBefore(startBtn, document.getElementById('close-btn'));
+                    startBtn.style.display = 'inline';
+                });
+
+                const panel = document.getElementById('controls-panel');
+                panel.insertBefore(reloadBtn, document.getElementById('close-btn'));
+            }
+
+            return;
+        }
+        
+        animationId = requestAnimationFrame(animate);
+    }
+    
+    function moveSquare(sq) {
+        sq.x += sq.dx;
+        sq.y += sq.dy;
+
+        const width = anim.clientWidth;
+        const height = anim.clientHeight;
+
+        if (sq.x <= 0 || sq.x + sq.el.offsetWidth >= width) {
+            sq.dx = -sq.dx;
+            logEvent('Відбиття від вертикальної стінки');
+        }
+        if (sq.y <= 0 || sq.y + sq.el.offsetHeight >= height) {
+            sq.dy = -sq.dy;
+            logEvent('Відбиття від горизонтальної стінки');
+        }
+
+        // Додаємо невеликий "буфер" — якщо трохи вилізли, трохи відсуваємо назад
+        if (sq.x < 0) sq.x = 0;
+        if (sq.x + sq.el.offsetWidth > width) sq.x = width - sq.el.offsetWidth;
+        if (sq.y < 0) sq.y = 0;
+        if (sq.y + sq.el.offsetHeight > height) sq.y = height - sq.el.offsetHeight;
+
+        sq.el.style.left = sq.x + 'px';
+        sq.el.style.top = sq.y + 'px';
+    }
+    
+    function checkCollision(a, b) {
+        // Повне накладання: менший (зелений) повністю всередині більшого (червоного)
+        // Але оскільки розміри різні, проста перевірка на однакові координати центра
+        // (бо менший 10px, більший 20px — центр різний, тому перевіряємо, чи зелений в межах червоного)
+        const ax1 = a.x;
+        const ax2 = a.x + 20;
+        const ay1 = a.y;
+        const ay2 = a.y + 20;
+        const bx1 = b.x;
+        const bx2 = b.x + 10;
+        const by1 = b.y;
+        const by2 = b.y + 10;
+        
+        return bx1 >= ax1 && bx2 <= ax2 && by1 >= ay1 && by2 <= ay2;
+    }
+    
+    function resetPositions() {
+        red.x = 0;
+        red.y = animRect.height / 2 - 10;
+        green.x = animRect.width / 2 - 5;
+        green.y = 0;
+        
+        red.el.style.left = red.x + 'px';
+        red.el.style.top = red.y + 'px';
+        green.el.style.left = green.x + 'px';
+        green.el.style.top = green.y + 'px';
+    }
+}
+
+function logEvent(message) {
+    eventId++;
+    const clientTime = new Date().toISOString();
+    addMessage(`${eventId}: ${message} (${clientTime})`);
+    
+    // Immediate логування
+    fetch('php/log_immediate.php', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ id: eventId, time: clientTime, msg: message })
+    }).catch(err => console.error('Immediate log error:', err));
+    
+    // Batch (LocalStorage)
+    eventsBatch.push({ id: eventId, time: clientTime, msg: message });
+    localStorage.setItem('eventsBatch', JSON.stringify(eventsBatch));
+}
+
+function addMessage(text) {
+    const msgDiv = document.getElementById('messages');
+    if (msgDiv) {
+        msgDiv.innerHTML += text + '<br>';
+        msgDiv.scrollTop = msgDiv.scrollHeight;
+    }
+}
+
+async function closeAnimation() {
+    logEvent('Натискання Close');
+    
+    // Відправляємо batch, якщо є дані
+    if (eventsBatch.length > 0) {
+        await fetch('php/log_batch.php', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(eventsBatch)
+        }).catch(err => console.error('Batch log error:', err));
+        
+        // Очищаємо LocalStorage (опціонально)
+        localStorage.removeItem('eventsBatch');
+        eventsBatch = [];
+    }
+    
+    // Завантажуємо логи з сервера
+    try {
+        const [immRes, batchRes] = await Promise.all([
+            fetch('php/get_immediate.php').then(r => r.json()),
+            fetch('php/get_batch.php').then(r => r.json())
+        ]);
+        
+        displayLogs(immRes, batchRes);
+    } catch (err) {
+        console.error('Error loading logs:', err);
+        document.getElementById('logs-table').innerHTML = '<p>Помилка завантаження логів</p>';
+    }
+    
+    // Повертаємо оригінальний контент
+    document.querySelector('.block3').innerHTML = originalContent;
+}
+
+function displayLogs(immediate, batch) {
+    let table = `<table border="1" style="width:100%; margin-top:20px; border-collapse: collapse;">
+        <tr style="background:#f0f0f0;">
+            <th style="padding:8px;">Immediate (серверний час)</th>
+            <th style="padding:8px;">Batch (локальний час)</th>
+        </tr>`;
+    
+    const maxLen = Math.max(immediate.length, batch.length);
+    for (let i = 0; i < maxLen; i++) {
+        const imm = immediate[i] || { id: '-', msg: '-', server_time: '-' };
+        const bat = batch[i] || { id: '-', msg: '-', time: '-' };
+        
+        table += `<tr>
+            <td style="padding:6px;">${imm.id}: ${imm.msg} (${imm.server_time})</td>
+            <td style="padding:6px;">${bat.id}: ${bat.msg} (${bat.time})</td>
+        </tr>`;
+    }
+    table += `</table>`;
+    
+    document.getElementById('logs-table').innerHTML = table;
+}
