@@ -247,7 +247,10 @@ figcaption {
       #c0c0c0 16px,
       #c0c0c0 32px
     ); */
-  background: url('texture.jpg') repeat;
+
+  /* background: url('images\texture1.jpg') repeat; */
+  background: url('../images/texture1.jpg') repeat;
+
   /* margin: 0 auto; 
   bottom: 0; */
 

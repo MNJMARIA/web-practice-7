@@ -614,3 +614,17 @@ document.getElementById('clear-logs-btn')?.addEventListener('click', async () =>
         }
     }
 });
+
+// Додайте в ваш script.js
+window.addEventListener('load', function() {
+    const texture = new Image();
+    texture.onload = function() {
+        console.log('Текстура успішно завантажена');
+    };
+    texture.onerror = function() {
+        console.error('Не вдалося завантажити текстуру. Шлях:', texture.src);
+        // Можна встановити fallback фон
+        document.getElementById('anim').style.backgroundColor = '#e0e0e0';
+    };
+    texture.src = 'images/texture2.jpg'; // той самий шлях
+});
