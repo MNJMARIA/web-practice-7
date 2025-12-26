@@ -626,5 +626,5 @@ window.addEventListener('load', function() {
         // Можна встановити fallback фон
         document.getElementById('anim').style.backgroundColor = '#e0e0e0';
     };
-    texture.src = 'images/texture2.jpg'; // той самий шлях
+    texture.src = 'images/texture2.png'; // той самий шлях
 });
