@@ -34,25 +34,54 @@ function startAnimation() {
     setupAnimation();
 }
 
+/*
 function setupAnimation() {
     const anim = document.getElementById('anim');
     const animRect = anim.getBoundingClientRect(); // розміри anim не змінюються під час анімації
     
     let red = {
         el: document.getElementById('red-square'),
-        x: 0,
-        y: animRect.height / 2 - 10,
+        // x: 0,
+        // y: animRect.height / 2 - 10,
         dx: 2,
         dy: 2
     };
     
     let green = {
         el: document.getElementById('green-square'),
-        x: animRect.width / 2 - 5,
-        y: 0,
+        // x: animRect.width / 2 - 5,
+        // y: 0,
         dx: 3,
         dy: -3
     };
+
+    // Функція для оновлення позицій при зміні розміру
+    function updatePositions() {
+        const animRect = anim.getBoundingClientRect();
+        
+        // Початкові позиції (оновлюються при кожному виклику)
+        red.x = 0;
+        red.y = animRect.height / 2 - 10;
+        green.x = animRect.width / 2 - 5;
+        green.y = 0;
+        
+        // Застосовуємо позиції
+        red.el.style.left = red.x + 'px';
+        red.el.style.top = red.y + 'px';
+        green.el.style.left = green.x + 'px';
+        green.el.style.top = green.y + 'px';
+    }
+    
+    // Спочатку встановлюємо позиції
+    updatePositions();
+    
+    // Оновлюємо при зміні розміру вікна
+    window.addEventListener('resize', () => {
+        if (!running) { // Якщо анімація не запущена
+            updatePositions();
+        }
+        // Якщо анімація запущена, квадрати продовжать рух у нових межах
+    });
     
     // Початкові позиції
     red.el.style.left = red.x + 'px';
@@ -89,33 +118,11 @@ function setupAnimation() {
             logEvent('Натискання Stop');
             cancelAnimationFrame(animationId);
             running = false;
-            
-            // Ховаємо Stop
+
             stopBtn.remove();
-            
-            // Створюємо Reload
-            const reloadBtn = document.createElement('button');
-            reloadBtn.textContent = 'Reload';
-            reloadBtn.className = 'controls-btn';
-            reloadBtn.id = 'reload-btn';
-            
-            reloadBtn.addEventListener('click', () => {
-                logEvent('Натискання Reload');
-                resetPositions();
-                
-                // Видаляємо Reload і повертаємо Start
-                reloadBtn.remove();
-                //const panel = document.getElementById('controls-panel');
-                //panel.insertBefore(startBtn, document.getElementById('close-btn'));
-                //startBtn.style.display = 'inline';
+            startBtn.style.display = 'inline-block';  // Показуємо Start
 
-                // startBtn.style.display = 'none'; // ⛔ не показуємо Start
-                // startMovement();
 
-                startBtn.style.display = 'inline-block';
-                running = false;
-                
-            });
             
             // Вставляємо Reload перед Close
             const panel = document.getElementById('controls-panel');
@@ -165,8 +172,10 @@ function setupAnimation() {
 
                     // startBtn.style.display = 'inline-block';
                     // running = false;
-                    startBtn.style.display = 'inline-block';
-                    running = false;
+
+                    // startBtn.style.display = 'inline-block';
+                    // running = false;
+                    document.getElementById('start-btn').style.display = 'inline-block';
                 });
 
                 const panel = document.getElementById('controls-panel');
@@ -232,6 +241,195 @@ function setupAnimation() {
         green.el.style.left = green.x + 'px';
         green.el.style.top = green.y + 'px';
     }
+}
+*/
+function setupAnimation() {
+    const anim = document.getElementById('anim');
+    
+    // Об'єкти квадратів (без початкових позицій)
+    let red = {
+        el: document.getElementById('red-square'),
+        dx: 2,
+        dy: 2
+    };
+    
+    let green = {
+        el: document.getElementById('green-square'),
+        dx: 3,
+        dy: -3
+    };
+
+    // Функція для оновлення позицій при зміні розміру
+    function updatePositions() {
+        const animRect = anim.getBoundingClientRect();
+        
+        // Початкові позиції (оновлюються при кожному виклику)
+        red.x = 0;
+        red.y = animRect.height / 2 - 10;  // посередині вертикалі
+        green.x = animRect.width / 2 - 5;  // посередині горизонталі
+        green.y = 0;
+        
+        // Застосовуємо позиції
+        red.el.style.left = red.x + 'px';
+        red.el.style.top = red.y + 'px';
+        green.el.style.left = green.x + 'px';
+        green.el.style.top = green.y + 'px';
+    }
+    
+    // Дебаунс для resize події
+    let resizeTimer;
+    
+    // Обробник зміни розміру вікна
+    function handleResize() {
+        clearTimeout(resizeTimer);
+        resizeTimer = setTimeout(() => {
+            if (!running) { // Якщо анімація не запущена
+                updatePositions();
+            }
+            // Якщо анімація запущена, квадрати продовжать рух у нових межах
+            // moveSquare() буде використовувати поточні anim.clientWidth/Height
+        }, 100);
+    }
+    
+    // Спочатку встановлюємо позиції
+    updatePositions();
+    
+    // Додаємо обробник resize
+    window.addEventListener('resize', handleResize);
+    
+    // Кнопка Start
+    document.getElementById('start-btn').addEventListener('click', () => {
+        logEvent('Натискання Start');
+        startMovement();
+    });
+    
+    // Кнопка Close
+    document.getElementById('close-btn').addEventListener('click', closeAnimation);
+    
+    function startMovement() {
+        if (running) return;
+        running = true;
+        
+        // Ховаємо Start
+        const startBtn = document.getElementById('start-btn');
+        startBtn.style.display = 'none';
+        
+        // Створюємо Stop
+        const stopBtn = document.createElement('button');
+        stopBtn.textContent = 'Stop';
+        stopBtn.className = 'controls-btn';
+        stopBtn.id = 'stop-btn';
+        
+        stopBtn.addEventListener('click', () => {
+            logEvent('Натискання Stop');
+            cancelAnimationFrame(animationId);
+            running = false;
+            
+            // ✅ За завданням: Stop → Start (квадрати залишаються на місці)
+            stopBtn.remove();
+            startBtn.style.display = 'inline-block';
+        });
+        
+        // Вставляємо Stop перед Close
+        const panel = document.getElementById('controls-panel');
+        panel.insertBefore(stopBtn, document.getElementById('close-btn'));
+        
+        // Запускаємо анімацію
+        animate();
+    }
+    
+    function animate() {
+        moveSquare(red);
+        moveSquare(green);
+        logEvent('Крок анімації');
+        
+        if (checkCollision(red, green)) {
+            logEvent('Повне накладання квадратів - стоп');
+            cancelAnimationFrame(animationId);
+            running = false;
+
+            // Автоматична зупинка — міняємо Stop на Reload
+            const stopBtn = document.getElementById('stop-btn');
+            if (stopBtn) {
+                stopBtn.remove();
+
+                const reloadBtn = document.createElement('button');
+                reloadBtn.textContent = 'Reload';
+                reloadBtn.className = 'controls-btn';
+                reloadBtn.id = 'reload-btn';
+
+                reloadBtn.addEventListener('click', () => {
+                    logEvent('Натискання Reload');
+                    resetPositions(); // Повертаємо квадрати на початок
+                    
+                    // Reload → Start
+                    reloadBtn.remove();
+                    document.getElementById('start-btn').style.display = 'inline-block';
+                });
+
+                const panel = document.getElementById('controls-panel');
+                panel.insertBefore(reloadBtn, document.getElementById('close-btn'));
+            }
+
+            return;
+        }
+        
+        animationId = requestAnimationFrame(animate);
+    }
+    
+    function moveSquare(sq) {
+        // Отримуємо актуальні розміри anim кожен кадр
+        const width = anim.clientWidth;
+        const height = anim.clientHeight;
+        
+        sq.x += sq.dx;
+        sq.y += sq.dy;
+
+        // Перевірка на зіткнення зі стінками (з урахуванням розмірів квадрата)
+        if (sq.x <= 0 || sq.x + sq.el.offsetWidth >= width) {
+            sq.dx = -sq.dx;
+            logEvent(sq === red ? 'Відбиття від вертикальної стінки (червоний)' : 
+                                 'Відбиття від вертикальної стінки (зелений)');
+        }
+        if (sq.y <= 0 || sq.y + sq.el.offsetHeight >= height) {
+            sq.dy = -sq.dy;
+            logEvent(sq === red ? 'Відбиття від горизонтальної стінки (червоний)' : 
+                                 'Відбиття від горизонтальної стінки (зелений)');
+        }
+
+        // Корекція позицій, щоб не виходили за межі
+        if (sq.x < 0) sq.x = 0;
+        if (sq.x + sq.el.offsetWidth > width) sq.x = width - sq.el.offsetWidth;
+        if (sq.y < 0) sq.y = 0;
+        if (sq.y + sq.el.offsetHeight > height) sq.y = height - sq.el.offsetHeight;
+
+        // Застосовуємо нові позиції
+        sq.el.style.left = sq.x + 'px';
+        sq.el.style.top = sq.y + 'px';
+    }
+    
+    function checkCollision(a, b) {
+        // Повне накладання: менший (зелений) повністю всередині більшого (червоного)
+        const ax1 = a.x;
+        const ax2 = a.x + 20;
+        const ay1 = a.y;
+        const ay2 = a.y + 20;
+        const bx1 = b.x;
+        const bx2 = b.x + 10;
+        const by1 = b.y;
+        const by2 = b.y + 10;
+        
+        return bx1 >= ax1 && bx2 <= ax2 && by1 >= ay1 && by2 <= ay2;
+    }
+    
+    function resetPositions() {
+        updatePositions(); // Використовуємо ту ж функцію
+    }
+    
+    // Прибираємо обробник resize при закритті анімації
+    document.getElementById('close-btn').addEventListener('click', () => {
+        window.removeEventListener('resize', handleResize);
+    }, { once: true });
 }
 
 function logEvent(message) {

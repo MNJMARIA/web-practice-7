@@ -234,9 +234,9 @@ figcaption {
 #anim {
   position: relative;
   /* width: 500px;
-  height: 300px; */
-  width: calc(100% - 10px);  /* Wmax-10px */
-  height: calc(100% - 50px); /* Hmax-50px */
+  height: 300px;  */
+  width: calc(100% - 10px); 
+  height: calc(100% - 50px); 
   border: 5px solid orange;
 
   /* background-image:
@@ -247,8 +247,13 @@ figcaption {
       #c0c0c0 16px,
       #c0c0c0 32px
     ); */
-    background: url('texture.jpg') repeat;
-  margin: 0 auto; /* Горизонтальне вирівнювання по центру */
+  background: url('texture.jpg') repeat;
+  /* margin: 0 auto; 
+  bottom: 0; */
+
+  bottom: 0;
+  left: 0; /* Додайте це! */
+  margin: 0 auto;
 }
 
 
