@@ -68,7 +68,9 @@ function setupAnimation() {
         
         // Ховаємо Start
         const startBtn = document.getElementById('start-btn');
-        startBtn.remove();
+        // startBtn.remove();
+        startBtn.style.display = 'none';
+
         
         // Створюємо і вставляємо Stop перед Close
         const stopBtn = document.createElement('button');
@@ -97,7 +99,7 @@ function setupAnimation() {
                 // Видаляємо Reload і повертаємо Start
                 reloadBtn.remove();
                 const panel = document.getElementById('controls-panel');
-                panel.insertBefore(startBtn, document.getElementById('close-btn'));
+                //panel.insertBefore(startBtn, document.getElementById('close-btn'));
                 startBtn.style.display = 'inline';
             });
             
@@ -141,7 +143,7 @@ function setupAnimation() {
                     reloadBtn.remove();
                     const panel = document.getElementById('controls-panel');
                     const startBtn = document.getElementById('start-btn');
-                    panel.insertBefore(startBtn, document.getElementById('close-btn'));
+                    // panel.insertBefore(startBtn, document.getElementById('close-btn'));
                     startBtn.style.display = 'inline';
                 });
 
