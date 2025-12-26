@@ -17,8 +17,9 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST' && empty($_POST)) {
 }
 
 header('Content-Type: application/json');
+header('Access-Control-Allow-Origin: *');
 
-$file = '../events_batch.txt';
+$file = '../events_immediate.txt';
 
 if (file_exists($file)) {
     $lines = file($file, FILE_IGNORE_NEW_LINES | FILE_SKIP_EMPTY_LINES);
@@ -27,7 +28,12 @@ if (file_exists($file)) {
     foreach ($lines as $line) {
         $decoded = json_decode($line, true);
         if ($decoded !== null) {
-            $data[] = $decoded;
+            // Форматуємо для відображення в таблиці
+            $data[] = [
+                'id' => $decoded['id'],
+                'msg' => $decoded['msg'],
+                'server_time' => $decoded['server_time']
+            ];
         }
     }
 

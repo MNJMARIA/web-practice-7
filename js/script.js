@@ -257,34 +257,43 @@ async function closeAnimation() {
     
     // Відправляємо batch, якщо є дані
     if (eventsBatch.length > 0) {
-        await fetch('php/log_batch.php', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify(eventsBatch)
-        }).catch(err => console.error('Batch log error:', err));
-        
-        // Очищаємо LocalStorage (опціонально)
-        localStorage.removeItem('eventsBatch');
-        eventsBatch = [];
+        try {
+            await fetch('php/log_batch.php', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(eventsBatch)
+            });
+        } catch (err) {
+            console.warn('Batch log failed, but stored locally:', err);
+            // Дані вже в LocalStorage, можна спробувати пізніше
+        }
     }
-    
+
     // Завантажуємо логи з сервера
     try {
         const [immRes, batchRes] = await Promise.all([
-            fetch('php/get_immediate.php').then(r => r.json()),
-            fetch('php/get_batch.php').then(r => r.json())
+            fetch('php/get_immediate.php').then(r => {
+                if (!r.ok) throw new Error(`HTTP ${r.status}`);
+                return r.json();
+            }),
+            fetch('php/get_batch.php').then(r => {
+                if (!r.ok) throw new Error(`HTTP ${r.status}`);
+                return r.json();
+            })
         ]);
         
         displayLogs(immRes, batchRes);
     } catch (err) {
         console.error('Error loading logs:', err);
-        document.getElementById('logs-table').innerHTML = '<p>Помилка завантаження логів</p>';
+        document.getElementById('logs-table').innerHTML = 
+            `<p style="color:red;">Помилка завантаження логів: ${err.message}</p>`;
     }
     
     // Повертаємо оригінальний контент
     document.querySelector('.block3').innerHTML = originalContent;
 }
 
+/*
 function displayLogs(immediate, batch) {
     let table = `<table border="1" style="width:100%; margin-top:20px; border-collapse: collapse;">
         <tr style="background:#f0f0f0;">
@@ -305,7 +314,38 @@ function displayLogs(immediate, batch) {
     table += `</table>`;
     
     document.getElementById('logs-table').innerHTML = table;
+}*/
+
+function displayLogs(immediate, batch) {
+    let table = `<table border="1" style="width:100%; margin-top:20px; border-collapse: collapse;">
+        <tr style="background:#f0f0f0;">
+            <th style="padding:8px;">Immediate (серверний час)</th>
+            <th style="padding:8px;">Batch (локальний час)</th>
+        </tr>`;
+    
+    const maxLen = Math.max(immediate.length, batch.length);
+    
+    for (let i = 0; i < maxLen; i++) {
+        // Форматуємо immediate
+        const imm = immediate[i] || {};
+        const immText = imm.id ? `${imm.id}: ${imm.msg} (${imm.server_time})` : '-';
+        
+        // Форматуємо batch
+        const bat = batch[i] || {};
+        // batch зберігає client_time, але для таблиці показуємо time
+        const batTime = bat.time || bat.client_time || '-';
+        const batText = bat.id ? `${bat.id}: ${bat.msg} (${batTime})` : '-';
+        
+        table += `<tr>
+            <td style="padding:6px;">${immText}</td>
+            <td style="padding:6px;">${batText}</td>
+        </tr>`;
+    }
+    
+    table += `</table>`;
+    document.getElementById('logs-table').innerHTML = table;
 }
+
 
 // function createTexture(ctx) {
 //   const size = 32;
@@ -337,3 +377,10 @@ function downloadLog(events) {
   link.download = "events_immediate.txt";
   link.click();
 }
+
+document.getElementById('clear-logs-btn')?.addEventListener('click', async () => {
+    if (confirm('Очистити всі логи на сервері?')) {
+        await fetch('php/clear_logs.php'); // Створіть цей файл
+        document.getElementById('logs-table').innerHTML = '<p>Логи очищено</p>';
+    }
+});
