@@ -233,18 +233,21 @@ figcaption {
 
 #anim {
   position: relative;
-  width: 500px;
-  height: 300px;
-  border: 4px solid orange;
+  /* width: 500px;
+  height: 300px; */
+  width: calc(100% - 10px);  /* Wmax-10px */
+  height: calc(100% - 50px); /* Hmax-50px */
+  border: 5px solid orange;
 
-  background-image:
+  /* background-image:
     repeating-linear-gradient(
       45deg,
       #e0e0e0 0px,
       #e0e0e0 16px,
       #c0c0c0 16px,
       #c0c0c0 32px
-    );
+    ); */
+    background: url('texture.jpg') repeat;
   margin: 0 auto; /* Горизонтальне вирівнювання по центру */
 }
 

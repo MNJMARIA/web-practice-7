@@ -8,6 +8,7 @@ const originalContent = document.querySelector('#main-content').innerHTML;
 document.getElementById('play-btn').addEventListener('click', startAnimation);
 
 function startAnimation() {
+
     const block3 = document.querySelector('.block3');
     block3.innerHTML = `
     <div id="work">
@@ -23,6 +24,12 @@ function startAnimation() {
             <div id="green-square" class="square" style="width:10px;height:10px;background:green;"></div>
         </div>
     </div>`;
+
+    // Очищаємо повідомлення, але НЕ скидаємо лічильники!
+    const messagesDiv = document.getElementById('messages');
+    if (messagesDiv) {
+        messagesDiv.innerHTML = '';
+    }
     
     setupAnimation();
 }
@@ -263,6 +270,10 @@ async function closeAnimation() {
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify(eventsBatch)
             });
+
+             // ✅ Тільки після успішної відправки очищаємо
+            eventsBatch = [];
+            localStorage.removeItem('eventsBatch');
         } catch (err) {
             console.warn('Batch log failed, but stored locally:', err);
             // Дані вже в LocalStorage, можна спробувати пізніше
@@ -379,8 +390,29 @@ function downloadLog(events) {
 }
 
 document.getElementById('clear-logs-btn')?.addEventListener('click', async () => {
-    if (confirm('Очистити всі логи на сервері?')) {
-        await fetch('php/clear_logs.php'); // Створіть цей файл
-        document.getElementById('logs-table').innerHTML = '<p>Логи очищено</p>';
+    if (confirm('Очистити всі логи на сервері та локально?')) {
+        try {
+            const response = await fetch('php/clear_logs.php');
+            const result = await response.json();
+            
+            if (result.status === 'success') {
+                // Очищаємо LocalStorage
+                localStorage.removeItem('eventsBatch');
+                eventsBatch = [];
+                eventId = 0;
+                
+                // Очищаємо таблицю логів
+                document.getElementById('logs-table').innerHTML = '<p>Логи успішно очищено!</p>';
+                
+                console.log('Clear logs result:', result);
+            } else {
+                document.getElementById('logs-table').innerHTML = 
+                    `<p style="color:red;">Помилка: ${result.message || 'Невідома помилка'}</p>`;
+            }
+        } catch (err) {
+            console.error('Clear logs error:', err);
+            document.getElementById('logs-table').innerHTML = 
+                `<p style="color:red;">Помилка очищення логів: ${err.message}</p>`;
+        }
     }
 });
