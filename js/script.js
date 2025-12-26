@@ -289,3 +289,34 @@ function displayLogs(immediate, batch) {
     
     document.getElementById('logs-table').innerHTML = table;
 }
+
+// function createTexture(ctx) {
+//   const size = 32;
+//   const patternCanvas = document.createElement("canvas");
+//   patternCanvas.width = size;
+//   patternCanvas.height = size;
+  
+
+//   const pctx = patternCanvas.getContext("2d");
+
+//   pctx.fillStyle = "#e0e0e0";
+//   pctx.fillRect(0, 0, size, size);
+
+//   pctx.strokeStyle = "#c0c0c0";
+//   pctx.beginPath();
+//   pctx.moveTo(0, 0);
+//   pctx.lineTo(size, size);
+//   pctx.stroke();
+
+//   return ctx.createPattern(patternCanvas, "repeat");
+// }
+
+function downloadLog(events) {
+  const content = events.join("\n");
+  const blob = new Blob([content], { type: "text/plain" });
+
+  const link = document.createElement("a");
+  link.href = URL.createObjectURL(blob);
+  link.download = "events_immediate.txt";
+  link.click();
+}

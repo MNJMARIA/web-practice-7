@@ -221,14 +221,31 @@ figcaption {
     justify-content: flex-end;
 }
 
-#anim {
+/* #anim {
     width: calc(100% - 10px);
     height: calc(100% - 50px);
     border: 5px solid orange;
     position: relative;
     background: url('../texture.png') repeat;
     margin: 0 auto;
+} */
+
+#anim {
+  position: relative;
+  width: 500px;
+  height: 300px;
+  border: 4px solid orange;
+
+  background-image:
+    repeating-linear-gradient(
+      45deg,
+      #e0e0e0 0px,
+      #e0e0e0 16px,
+      #c0c0c0 16px,
+      #c0c0c0 32px
+    );
 }
+
 
 #controls {
     padding: 10px;
