@@ -98,9 +98,16 @@ function setupAnimation() {
                 
                 // Видаляємо Reload і повертаємо Start
                 reloadBtn.remove();
-                const panel = document.getElementById('controls-panel');
+                //const panel = document.getElementById('controls-panel');
                 //panel.insertBefore(startBtn, document.getElementById('close-btn'));
-                startBtn.style.display = 'inline';
+                //startBtn.style.display = 'inline';
+
+                // startBtn.style.display = 'none'; // ⛔ не показуємо Start
+                // startMovement();
+
+                startBtn.style.display = 'inline-block';
+                running = false;
+                
             });
             
             // Вставляємо Reload перед Close
@@ -141,10 +148,18 @@ function setupAnimation() {
                     resetPositions();
 
                     reloadBtn.remove();
-                    const panel = document.getElementById('controls-panel');
-                    const startBtn = document.getElementById('start-btn');
+                    //const panel = document.getElementById('controls-panel');
+                    //const startBtn = document.getElementById('start-btn');
                     // panel.insertBefore(startBtn, document.getElementById('close-btn'));
-                    startBtn.style.display = 'inline';
+                    //startBtn.style.display = 'inline';
+
+                    // startBtn.style.display = 'none';
+                    // startMovement();
+
+                    // startBtn.style.display = 'inline-block';
+                    // running = false;
+                    startBtn.style.display = 'inline-block';
+                    running = false;
                 });
 
                 const panel = document.getElementById('controls-panel');
