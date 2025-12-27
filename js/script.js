@@ -325,7 +325,7 @@ function setupAnimation() {
             cancelAnimationFrame(animationId);
             running = false;
             
-            // ✅ За завданням: Stop → Start (квадрати залишаються на місці)
+            
             stopBtn.remove();
             startBtn.style.display = 'inline-block';
         });
@@ -469,7 +469,7 @@ async function closeAnimation() {
                 body: JSON.stringify(eventsBatch)
             });
 
-             // ✅ Тільки після успішної відправки очищаємо
+             // Тільки після успішної відправки очищаємо
             eventsBatch = [];
             localStorage.removeItem('eventsBatch');
         } catch (err) {
